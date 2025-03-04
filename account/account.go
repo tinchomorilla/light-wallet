@@ -1,28 +1,39 @@
 package account
 
 import (
-    "fmt"
-    //"log"
-    //"github.com/ethereum/go-ethereum/accounts/abi"
-    "math/big"
-    "github.com/ethereum/go-ethereum/common"
-    "github.com/ethereum/go-ethereum/crypto"
-    "github.com/ethereum/go-ethereum/ethclient"
-    "context"
+	"context"
+	"fmt"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/tinchomorilla/light-wallet/encryption"
 )
 
-// GenerateNewAccount generates a new Ethereum account and returns the address.
-func GenerateNewAccount(password string) (common.Address, error) {
+// GenerateNewAccount generates a new Ethereum account and returns the address, along with the encrypted private key.
+func GenerateNewAccount(password string) (common.Address, []byte, error) {
+
+	if len(password) == 0 {
+		return common.Address{}, nil, fmt.Errorf("password cannot be empty")
+	}
+
     // Create a new keypair
     privateKey, err := crypto.GenerateKey()
     if err != nil {
-        return common.Address{}, fmt.Errorf("failed to generate private key: %v", err)
+        return common.Address{}, nil, fmt.Errorf("failed to generate private key: %v", err)
+    }
+
+    // Encrypt the private key with the password
+    encryptedPrivateKey, err := encryption.EncryptPrivateKey(privateKey, password)
+    if err != nil {
+        return common.Address{}, nil, fmt.Errorf("failed to encrypt private key: %v", err)
     }
 
     // Derive the account address from the public key
     address := crypto.PubkeyToAddress(privateKey.PublicKey)
 
-    return address, nil
+    return address, encryptedPrivateKey, nil
 }
 
 

@@ -21,10 +21,12 @@ func main() {
     }
 
     // Generate a new Ethereum address
-    address, err := account.GenerateNewAccount("hola") 
+    address, private_key, err := account.GenerateNewAccount("hola") 
     if err != nil {
         log.Fatalf("Error generating new account: %v", err)
     }
+
+    fmt.Println("Private key:", private_key)
 
     // Get the balance of the new address
     balance, err := account.GetBalance(client, address)
