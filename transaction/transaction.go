@@ -12,19 +12,19 @@ import (
 )
 
 // SendTransaction dynamically fetches nonce, gas price, and gas limit
-func SendTransaction(client *ethclient.Client, privateKey *bind.TransactOpts, toAddress common.Address, value *big.Int) error {
+func SendTransaction(client *ethclient.Client, privateKey *bind.TransactOpts, toAddress common.Address, value *big.Int) (common.Hash, error) {
 	ctx := context.Background()
 
 	// Get the nonce (transaction count of sender)
 	nonce, err := client.PendingNonceAt(ctx, privateKey.From)
 	if err != nil {
-		return fmt.Errorf("failed to get nonce: %v", err)
+		return common.Hash{}, fmt.Errorf("failed to get nonce: %v", err)
 	}
 
 	// Get current gas price from the network
 	gasPrice, err := client.SuggestGasPrice(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get gas price: %v", err)
+		return common.Hash{}, fmt.Errorf("failed to get gas price: %v", err)
 	}
 
 	// Estimate gas limit based on transaction type
@@ -36,7 +36,7 @@ func SendTransaction(client *ethclient.Client, privateKey *bind.TransactOpts, to
 	}
 	gasLimit, err := client.EstimateGas(ctx, msg)
 	if err != nil {
-		return fmt.Errorf("failed to estimate gas limit: %v", err)
+		return common.Hash{}, fmt.Errorf("failed to estimate gas limit: %v", err)
 	}
 
 	// Create the transaction
@@ -45,15 +45,16 @@ func SendTransaction(client *ethclient.Client, privateKey *bind.TransactOpts, to
 	// Sign the transaction
 	signedTx, err := privateKey.Signer(privateKey.From, tx)
 	if err != nil {
-		return fmt.Errorf("failed to sign transaction: %v", err)
+		return common.Hash{},fmt.Errorf("failed to sign transaction: %v", err)
 	}
 
 	// Send the transaction
 	err = client.SendTransaction(ctx, signedTx)
 	if err != nil {
-		return fmt.Errorf("failed to send transaction: %v", err)
+		return common.Hash{}, fmt.Errorf("failed to send transaction: %v", err)
 	}
 
-	fmt.Printf("✅ Transaction sent! TX Hash: %s\n", signedTx.Hash().Hex())
-	return nil
+	// Return the transaction hash to the user 
+	// so they can track the transaction
+	return signedTx.Hash(), nil
 }

@@ -1,7 +1,6 @@
 package transaction_test
 
 import (
-	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -15,7 +14,9 @@ import (
 	"github.com/tinchomorilla/light-wallet/transaction" // Your package where SendTransaction is located
 )
 
-// TestSendTransaction tests the SendTransaction function
+// Test the sendTransaction function to check
+// if it sends a transaction correctly
+// This test sends 0.0005 ETH from one account to another
 func TestSendTransaction(t *testing.T) {
 
 	err := godotenv.Load("/home/tincho/Documents/light-wallet/.env")
@@ -29,6 +30,7 @@ func TestSendTransaction(t *testing.T) {
 	client, err := ethclient.Dial("https://sepolia.infura.io/v3/" + api_key)
 
 	if err != nil {
+		
 		log.Fatalf("Error connecting to infura %v", err)
 	}
 
@@ -57,11 +59,12 @@ func TestSendTransaction(t *testing.T) {
 
 
 	// Call SendTransaction
-	err = transaction.SendTransaction(client, transactOpts, toAddress, value)
+	_, err = transaction.SendTransaction(client, transactOpts, toAddress, value)
 	if err != nil {
 		t.Fatalf("Failed to send transaction: %v", err)
 	}
 
-
-	fmt.Println("Transaction sent successfully!")
+	// Here we can check the transaction hash and status
+	// to ensure the transaction was successful
+	// I checked it manually in my wallets and it worked :)
 }
