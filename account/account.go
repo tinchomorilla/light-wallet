@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"fmt"
 	"math/big"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // GenerateNewAccount generates a new Ethereum account and returns the address, along with the encrypted private key.
-func GenerateNewAccount(password string) (common.Address, []byte, error) {
+func GenerateNewAccount(password string) (common.Address, *ecdsa.PrivateKey, error) {
 
 	if len(password) == 0 {
 		return common.Address{}, nil, fmt.Errorf("password cannot be empty")
@@ -30,10 +31,13 @@ func GenerateNewAccount(password string) (common.Address, []byte, error) {
         return common.Address{}, nil, fmt.Errorf("failed to encrypt private key: %v", err)
     }
 
+	// Should store the encrypted private key in a secure location
+	fmt.Println("Encrypted private key:", encryptedPrivateKey)
+
     // Derive the account address from the public key
     address := crypto.PubkeyToAddress(privateKey.PublicKey)
 
-    return address, encryptedPrivateKey, nil
+    return address, privateKey, nil
 }
 
 
